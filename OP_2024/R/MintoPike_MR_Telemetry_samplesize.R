@@ -33,7 +33,7 @@ table1 <- detection_probability(n_raw=30,
            detection_probability(n_raw=30,
                                  prop_usedby = c(0.2, 0.1, 0.05),
                                  observe_at_least = 1:3,
-                                 prop_ofareas = 0.9)$p_multipleareas)
+                                 prop_ofareas = 1)$p_multipleareas)
 table1
 if(write_output) {
   write.csv(table1, file="OP_2024/R_output/detection_prob.csv")

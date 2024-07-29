@@ -1,2 +1,3 @@
 # MintoPike_MR_Telemetry
-Estimated Abundance of Northern Pike in the Chatanika River Overwintering Area, 2025
+
+Minto Flats, a large wetland complex located approximately 50 km west of Fairbanks, supports the largest sport fishery for northern pike within the Arctic-Yukon-Kuskokwim Management Area, as well as a substantial subsistence fishery on an overwintering aggregation of fish near the confluence of Goldstream Creek and the Chatanika River. Information on the abundance of the population present in the Chatanika River Overwintering Area (CROA) during winter is needed to ensure sport and subsistence fishery harvests are sustainable. This project will estimate the abundance of northern pike ≥600 and ≥720 mm FL for this population.
