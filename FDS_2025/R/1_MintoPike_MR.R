@@ -1,6 +1,7 @@
 library(tidyverse)
 library(janitor)
 library(recapr)
+library(dsftools)
 
 # loading some helper functions
 source("FDS_2025/R/recapr_prep.R")
@@ -16,7 +17,9 @@ event2_raw <- read_csv("FDS_2025/flat_data/event2.csv", skip=1) %>%
   filter(!is.na(Unique)) %>%
   mutate(`Tag Number` = as.character(`Tag Number`)) %>%
   rename(FL = `Fork Length (mm)`) %>%
-  rename(FLc = `Fork Length Corrected (mm)`)
+  rename(FLc = `Fork Length Corrected (mm)`) %>%
+  mutate(gear = sapply(strsplit(Comments, split="Gear= "), "[", 2)) %>%
+  mutate(gear = factor(ifelse(gear=="G", "GN", gear)))
 
 dim(event1_raw)
 dim(event2_raw)
@@ -259,3 +262,59 @@ with(mr600c_strat, {
   print("SE tot - stratified")
   print(sestrat(n1, n2, m2_1))
 })
+
+# to do:
+# - length comps (from second event)
+# - alt abundance of 600+ using length comp
+# - length comp by gear
+# - FIGURE OUT SPATIAL BIAS ISSUE  <--- honestly i don't know if i can do this
+# - WRITE THIS ALL UP
+
+n1 <- table(mr550_strat$input_data$event1$FL_strat)
+n2 <- table(mr550_strat$input_data$event2$FL_strat)
+m2_1 <- table(mr550_strat$recaps$matched$FL_strat_event1)
+m2_2 <- table(mr550_strat$recaps$matched$FL_strat_event2)
+
+Nhat_vec <- NChapman(n1, n2, m2_1)
+seNhat_vec <-   seChapman(n1, n2, m2_1)
+Nhat_strat <- Nstrat(n1, n2, m2_1)
+seNhat_strat <- sestrat(n1, n2, m2_1)
+
+# Length comp using 550 truncation and 650 stratification
+lengthbreaks <- c(550, 600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
+ASL_table(age = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, dig.lab = 4),
+          stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
+          Nhat=as.numeric(Nhat_vec),
+          se_Nhat = as.numeric(seNhat_vec))
+
+# this gets pop est of 600+ using the 650 strat
+ASL_table(age = cut(mr550_strat$input_data$event2$FL, breaks=c(550, 600, 1200), right=FALSE, dig.lab = 4),
+          stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
+          Nhat=as.numeric(Nhat_vec),
+          se_Nhat = as.numeric(seNhat_vec))
+
+# this gets prop est & mn lengths for each gear type, using 650 strat?? not sure if this is relevant
+ASL_table(age = mr550_strat$input_data$event2$gear,
+          length = mr550_strat$input_data$event2$FL,
+          stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
+          Nhat=as.numeric(Nhat_vec),
+          se_Nhat = as.numeric(seNhat_vec))
+
+# plotting FL by gear
+boxplot(FL~gear, data=event2_550)
+
+# non-stratified summary  - think about which is more appropriate
+event2_550 %>%
+  group_by(gear) %>%
+  summarise(n=length(FL),
+            mean_FL=mean(FL),
+            min_FL=min(FL),
+            max_FL=max(FL),
+            sd_FL=sd(FL)) %>%
+  mutate(se_FL = sd_FL/sqrt(n)) %>%
+  mutate(p_hat = n/sum(n)) %>%
+  mutate(se_p_hat = sqrt(p_hat*(1-p_hat)/(sum(n)-1)))
+
+# same thing with ASL_table
+ASL_table(age = mr550_strat$input_data$event2$gear,
+          length = mr550_strat$input_data$event2$FL)
