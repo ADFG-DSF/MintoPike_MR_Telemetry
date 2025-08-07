@@ -270,6 +270,33 @@ with(mr600c_strat, {
 # - FIGURE OUT SPATIAL BIAS ISSUE  <--- honestly i don't know if i can do this
 # - WRITE THIS ALL UP
 
+par(mfrow=c(2,2))
+with(mr550_strat,
+     ksplot(input_data$event1$FL,
+            recaps$matched$FL_event1,
+            col=c(1,2), legend=c("Event 1", "Recaps")))
+with(mr550_strat,
+     ksplot(input_data$event2$FL,
+            recaps$matched$FL_event2,
+            col=c(1,4), legend=c("Event 2", "Recaps")))
+
+with(mr550_strat,
+     ksplot(input_data$event1$FL %s_l% 650,
+            recaps$matched$FL_event1 %s_l% 650,
+            col=c(1,2), legend=c("Event 1", "Recaps"), main="550 - 649 mm"))
+with(mr550_strat,
+     ksplot(input_data$event2$FL %s_l% 650,
+            recaps$matched$FL_event2 %s_l% 650,
+            col=c(1,4), legend=c("Event 2", "Recaps"), main="550 - 649 mm"))
+with(mr550_strat,
+     ksplot(input_data$event1$FL %s_geq% 650,
+            recaps$matched$FL_event1 %s_geq% 650,
+            col=c(1,2), legend=c("Event 1", "Recaps"), main="650 mm +"))
+with(mr550_strat,
+     ksplot(input_data$event2$FL %s_geq% 650,
+            recaps$matched$FL_event2 %s_geq% 650,
+            col=c(1,4), legend=c("Event 2", "Recaps"), main="650 mm +"))
+
 n1 <- table(mr550_strat$input_data$event1$FL_strat)
 n2 <- table(mr550_strat$input_data$event2$FL_strat)
 m2_1 <- table(mr550_strat$recaps$matched$FL_strat_event1)
