@@ -1,5 +1,5 @@
 ---
-title: "Minto Pike Mark-Recapture - summary"
+title: "Minto Pike Mark-Recapture"
 output: word_document
 date: "2025-08-06"
 ---
@@ -72,22 +72,33 @@ mr600c_strat <- stratify(mr600c,
                         event_names = c("event1", "event2"),
                         column_names = c("FL","FLc"),
                         breaks = c(600, 650, 1200))
+
+growth_pval <- round(t.test(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1, alternative = "greater")$p.value, 2)
+growth_est <- round(mean(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1),2)
+growth_se <- round(dsftools::se(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1),2)
 ```
 
 ## Overview
+
+To facilitate possible correction for bias induced by incomplete migration from the MLSA to the CROA, abundance and length composition were estimated using length-stratified estimators, with a break point at 650 mm FL.  Since no radiotagged pike $\geq$ 650 mm FL were observed to stay in the MLSA overwinter, it was assumed that this length stratum would be free of bias due to immigration.
+
+Growth between events was tested using the recorded lengths of pike captured during both events.  A one-tailed paired t-test yielded a p-value of `r growth_pval`, indicating no evidence of positive growth.  The estimated growth was, in fact, negative, with an estimate of `r growth_est` mm FL (SE `r growth_se` mm FL).  This could be interpreted as evidence of slight measurement bias, perhaps during the winter.  The results presented here do not account for growth, however, the inferences of a growth-corrected estimate are compared in the appendix.  Instead of physical growth, a "corrected" estimate could be interpreted as correcting for possible measurement bias.
+
+Sample sizes for uncorrected strata are presented below.
 
 ```{r}
 n1 <- table(mr550_strat$input_data$event1$FL_strat)
 n2 <- table(mr550_strat$input_data$event2$FL_strat)
 m2_1 <- table(mr550_strat$recaps$matched$FL_strat_event1)
 m2_2 <- table(mr550_strat$recaps$matched$FL_strat_event2)
+
+cbind(n1, n2, m2=m2_1) %>% kable
 ```
 
-which dataset and why, which stratification and why
-
-tabulate n1, n2, m2 by stratum
+Size selectivity in both samples was evaluated using Kolmogorov-Smirnov (KS) tests using the recorded lengths of marked, captured, and recaptured individuals.  Tests indicated strong evidence of length selectivity in the first event for all samples, as well as weak evidence of length selectivity in the first event for the smaller length stratum.  Abundance estimates may be considered unbiased, but estimates of length composition were calculated using only the second-event sample.
 
 ## KS tests
+
 
 ```{r, fig.width=9, fig.height=4}
 par(family="serif")
@@ -100,7 +111,11 @@ with(mr550_strat,
      ksplot(input_data$event2$FL,
             recaps$matched$FL_event2,
             col=c(1,4), legend=c("Event 2", "Recaps"), main="All samples"))
+```
 
+```{r, fig.width=9, fig.height=4}
+par(family="serif")
+par(mfrow=c(1,2))
 with(mr550_strat,
      ksplot(input_data$event1$FL %s_l% 650,
             recaps$matched$FL_event1 %s_l% 650,
@@ -119,6 +134,8 @@ with(mr550_strat,
             col=c(1,4), legend=c("Event 2", "Recaps"), main="650 mm +"))
 ```
 
+\pagebreak
+
 ## Abundance Estimates & Length Composition
 
 ```{r}
@@ -126,28 +143,40 @@ Nhat_vec <- NChapman(n1, n2, m2_1)
 seNhat_vec <-   seChapman(n1, n2, m2_1)
 Nhat_strat <- Nstrat(n1, n2, m2_1)
 seNhat_strat <- sestrat(n1, n2, m2_1)
+
+# _f for formatted
+ff <- function(x) formatC(x, digits=0, format="f", big.mark=",")
+Nhat_vec_f <- paste0(ff(Nhat_vec), " (", ff(seNhat_vec), ")")
+Nhat_strat_f <- paste0(ff(Nhat_strat), " (", ff(seNhat_strat), ")")
 ```
 
-don't forget to use ASL_boilerplate
+### Abundance
+
+Abundance for each stratum was estimated as `r Nhat_vec_f[1]` and `r Nhat_vec_f[2]` for the 550-649 mm and 650+ mm length strata, respectively.
+
+Summing the stratum estimates and their respective variances yields an overall stratified estimate of `r Nhat_strat_f`.
+
+### Length composition
+
+Length composition was estimated using the samples from the second event, using stratified estimation as described below.
 
 ```{r}
 lengthbreaks <- c(550, 600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
-ASL_table(age = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+ASL_table(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
                     dig.lab = 4),
           stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
           Nhat=as.numeric(Nhat_vec),
-          se_Nhat = as.numeric(seNhat_vec)) %>% kable
-## ^^^ fix digits and try to add commas ##############################
+          se_Nhat = as.numeric(seNhat_vec)) %>% 
+  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
 ```
 
 ```{r, results='asis'}
-ASL_boilerplate(age = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, 
+ASL_boilerplate(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, 
                           right=FALSE, dig.lab = 4),
           stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
           Nhat=as.numeric(Nhat_vec),
           se_Nhat = as.numeric(seNhat_vec),
           species="pike")
-## ^^^ I NEED to figure out how to have ASL_ deal with length as categorical!!!
 ```
 
 ## Capture gear
