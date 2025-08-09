@@ -1118,7 +1118,7 @@ ksplot <- function(x1, x2, legend=c("x1","x2"), main="", col=c(1,1), lty=c(1,1),
   plot(ecdf(x1), main=c(main,
                         paste0("D=", signif(ksks$statistic, digits=3), ", ",
                                "pval=", signif(ksks$p.value, digits=3), collapse=NULL)),
-       col=col[1], lty=lty[1], xlab=xlab)
+       col=col[1], lty=lty[1], xlab=xlab, ylab="Cumulative Prop")
   plot(ecdf(x2), col=col[2], lty=lty[2], add=TRUE)
   legend("bottomright", lty=lty, col=col,
          legend=paste0(legend, " (n=",c(sum(!is.na(x1)), sum(!is.na(x2))),")"))

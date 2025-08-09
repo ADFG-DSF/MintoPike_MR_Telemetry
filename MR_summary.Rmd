@@ -1,7 +1,7 @@
 ---
 title: "Minto Pike Mark-Recapture"
 output: word_document
-date: "2025-08-06"
+date: "2025-08-08"
 ---
 
 ```{r setup, include=FALSE}
@@ -82,7 +82,7 @@ growth_se <- round(dsftools::se(mr550_strat$recaps$matched$FL_event2 - mr550_str
 
 To facilitate possible correction for bias induced by incomplete migration from the MLSA to the CROA, abundance and length composition were estimated using length-stratified estimators, with a break point at 650 mm FL.  Since no radiotagged pike $\geq$ 650 mm FL were observed to stay in the MLSA overwinter, it was assumed that this length stratum would be free of bias due to immigration.
 
-Growth between events was tested using the recorded lengths of pike captured during both events.  A one-tailed paired t-test yielded a p-value of `r growth_pval`, indicating no evidence of positive growth.  The estimated growth was, in fact, negative, with an estimate of `r growth_est` mm FL (SE `r growth_se` mm FL).  This could be interpreted as evidence of slight measurement bias, perhaps during the winter.  The results presented here do not account for growth, however, the inferences of a growth-corrected estimate are compared in the appendix.  Instead of physical growth, a "corrected" estimate could be interpreted as correcting for possible measurement bias.
+Growth between events was tested using the recorded lengths of recaptured during both events.  A one-tailed paired t-test yielded a p-value of `r growth_pval`, indicating no evidence of positive growth.  The estimated growth was, in fact, negative, with an estimate of `r growth_est` mm FL (SE `r growth_se` mm FL).  This could be interpreted as evidence of slight measurement bias, likely during the winter.  The results presented here do not account for growth; however, the inferences of a growth-corrected estimate are compared at the end of this document.  Instead of physical growth, a "corrected" estimate could be interpreted as correcting for possible measurement bias.
 
 Sample sizes for uncorrected strata are presented below.
 
@@ -95,7 +95,9 @@ m2_2 <- table(mr550_strat$recaps$matched$FL_strat_event2)
 cbind(n1, n2, m2=m2_1) %>% kable
 ```
 
-Size selectivity in both samples was evaluated using Kolmogorov-Smirnov (KS) tests using the recorded lengths of marked, captured, and recaptured individuals.  Tests indicated strong evidence of length selectivity in the first event for all samples, as well as weak evidence of length selectivity in the first event for the smaller length stratum.  Abundance estimates may be considered unbiased, but estimates of length composition were calculated using only the second-event sample.
+Size selectivity in both samples was evaluated using Kolmogorov-Smirnov (KS) tests using the recorded lengths of marked, captured, and recaptured individuals.  Tests indicated strong evidence of length selectivity in the first event for all samples, as well as weak evidence of length selectivity in the first event for the smaller length stratum.  Abundance estimates may be considered unbiased and germane to the first event, but estimates of length composition were calculated using only the second-event sample due to the likely presence of size selectivity in the first event.  
+
+It is worth noting that an abundance estimate that is germane to the first event may still be unbiased in the presence of length selectivity in the first event, provided that emigration from the sampled population (i.e. outside the MLSA) is independent of size.  Note: I had to write a simulation to convince myself of this!
 
 ## KS tests
 
@@ -170,6 +172,38 @@ ASL_table(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks
   kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
 ```
 
+For the purpose of comparison to similar studies, abundance of pike $\geq$ 600 mm FL was estimated using the stratified estimate of the proportion of pike $\geq$ 600 mm FL, applied to the stratified abundance estimate of pike $\geq$ 550 mm FL.  Results are tabulated below.
+
+```{r}
+lengthbreaks <- c(550, 600, 1200) #550 to 1146
+ASL_table(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+                    dig.lab = 4),
+          stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
+          Nhat=as.numeric(Nhat_vec),
+          se_Nhat = as.numeric(seNhat_vec)) %>% 
+  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+```
+
+```{r}
+n1_600 <- table(mr600_strat$input_data$event1$FL_strat)
+n2_600 <- table(mr600_strat$input_data$event2$FL_strat)
+m2_1_600 <- table(mr600_strat$recaps$matched$FL_strat_event1)
+m2_2_600 <- table(mr600_strat$recaps$matched$FL_strat_event2)
+
+Nhat_strat_600 <- Nstrat(n1_600, n2_600, m2_1_600)
+seNhat_strat_600 <- sestrat(n1_600, n2_600, m2_1_600)
+
+# _f for formatted
+ff <- function(x) formatC(x, digits=0, format="f", big.mark=",")
+Nhat_strat_f_600 <- paste0(ff(Nhat_strat_600), " (", ff(seNhat_strat_600), ")")
+```
+
+This may be compared to a stratified abundance estimate of pike $\geq$ 600 mm FL as calculated only from fish $\geq$ 600 mm FL, which results in an estimated abundance of `r Nhat_strat_f_600`.
+
+\pagebreak
+
+### Length composition methodology
+
 ```{r, results='asis'}
 ASL_boilerplate(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, 
                           right=FALSE, dig.lab = 4),
@@ -179,6 +213,229 @@ ASL_boilerplate(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=length
           species="pike")
 ```
 
+\pagebreak
+
 ## Capture gear
 
+```{r, fig.height=5, fig.width=7}
+# event2_550 %>%
+#   ggplot(aes(x=gear, y=FL)) +
+#   geom_boxplot() +
+#   theme_bw()
+
+# par(mfrow=c(1,2))
+par(family="serif")
+
+nn <- table(event2_550$gear)
+labs <- paste0(names(nn), " (n=", nn, ")")
+thecols <- adjustcolor(rainbow(4), green.f=.75, red.f=.75, blue.f=.75)
+plot(NA, xlim=range(event1_550$FL), ylim=0:1, ylab="Cumulative Prop", xlab="FL (mm)")
+for(thegear in sort(unique(event2_550$gear))) {
+  plot(ecdf(event2_550$FL[event2_550$gear==thegear]), col=thecols[which(sort(unique(event2_550$gear))==thegear)], add=TRUE)
+}
+legend("bottomright", col=thecols, pch=16, lty=1, legend=labs, title="Capture Gear")
+boxplot(FL~gear, data=event2_550, col=thecols, names=labs, xlab="Capture Gear", ylab="FL (mm)")
+```
+
+All pairwise differences in the distributions of lengths associated with capture gear types in the second event were tested using Kolmogorov-Smirnov (KS) tests, with a Šidák-corrected family-wise significance level of $\alpha^*=1-(1-0.05)^{\frac{1}{6}}$ = `r round(1-((1-.05)^(1/6)), 4)` assuming six possible comparisons.  A table of p-values is reported below, with values followed by ** denoting significant pairwise differences.
+
+Note: I'm not sure if this is meaningful.  The story is much clearer from the plot, and the presence or absence of family-wise significant differences mostly seems to indicate large sample sizes.
+
+```{r, warning=FALSE}
+pmat1 <- matrix(nrow=4, ncol=4)
+types <- sort(unique(event2_550$gear))
+rownames(pmat1) <- colnames(pmat1) <- types
+
+for(i in 1:3) {
+  for(j in (i+1):4) {
+    pmat1[i,j] <- ks.test(event2_550$FL[event2_550$gear==types[i]],
+                         event2_550$FL[event2_550$gear==types[j]])$p.value
+  }
+}
+
+pmat2 <- pmat1[1:3,2:4]
+
+a <- .05
+a_sidak <- 1-((1-a)^(1/6)) 
+# pmat2 < a_sidak
+
+pmat3 <- ifelse(is.na(pmat2), "--",
+                ifelse(pmat2 < 0.00001, "< 0.00001**",
+                       ifelse(pmat2 < a_sidak, paste0(format(round(pmat2, 5), scientific=FALSE), "**"),
+                       round(pmat2, 3))))
+
+knitr::kable(pmat3, align="c")
+```
+
+\pagebreak
+
 ## Effects of length correction (or not) on inferences
+
+Abundance estimation using non-corrected lengths was presented, but a case could certainly be made for employing a "growth" correction as a means to correct for measurement bias in the first event.  Stratified estimates are reported below for all possible scenarios, in which length correction was performed for the first event using linear regression.
+
+```{r, warning=FALSE, message=FALSE}
+# just realized: it makes more sense to correct the first-event samples for bias 
+# than to correct second-event samples for growth.  Argghh!  Here we go.
+yreg <- mr550$recaps$matched$FL_event2
+xreg <- mr550$recaps$matched$FL_event1
+correction_lm_550 <- lm(yreg ~ xreg)
+event1_raw$FLc <- predict(correction_lm_550, newdata = data.frame(xreg=event1_raw$FL))
+
+# c for corrected (length correction)
+event1_550c <- event1_raw %>%
+  filter(FLc >= 550)
+event1_600c <- event1_raw %>%
+  filter(FLc >= 600)
+
+# force the measured lengths to be the same for recaps
+# lookup table
+length2 <- event2_550 %>%
+  select(FL, `Tag Number`) %>%
+  filter(!is.na(`Tag Number`)) %>%
+  rename(FLc2=FL)
+event1_550c <- event1_550c %>% 
+  left_join(length2) %>%
+  mutate(FLc = ifelse(!is.na(FLc2), FLc2, FLc))
+event1_600c <- event1_600c %>% 
+  left_join(length2) %>%
+  mutate(FLc = ifelse(!is.na(FLc2), FLc2, FLc))
+
+mr550c2 <- recapr_prep(ID="Tag Number", event1=event1_550c, event2=event2_550)
+mr600c2 <- recapr_prep(ID="Tag Number", event1=event1_600c, event2=event2_600)
+
+
+mr550c_strat <- stratify(mr550c2,
+                        event_names = c("event1", "event2"),
+                        column_names = c("FLc","FL"),
+                        breaks = c(550, 650, 1200))
+mr600c_strat <- stratify(mr600c2,
+                        event_names = c("event1", "event2"),
+                        column_names = c("FLc","FL"),
+                        breaks = c(600, 650, 1200))
+
+```
+
+```{r}
+magictable <- function(x) {
+  n1 <- table(x$input_data$event1$FL_strat)
+  n2 <- table(x$input_data$event2$FL_strat)
+  m2 <- table(x$recaps$matched$FL_strat_event1)
+  Nhat <- NChapman(n1, n2, m2)
+  se_Nhat <- seChapman(n1, n2, m2)
+  thetab1 <- cbind(n1, n2, m2, Nhat, se_Nhat)
+  thetab2 <- rbind(thetab1, total=colSums(thetab1))
+  thetab2[nrow(thetab2), ncol(thetab2)] <- sqrt(sum(thetab1[,ncol(thetab1)]^2))
+  return(thetab2)
+}
+magictable_c <- function(x) {  # _c for corrected
+  n1 <- table(x$input_data$event1$FLc_strat)
+  n2 <- table(x$input_data$event2$FL_strat)
+  m2 <- table(x$recaps$matched$FL_strat_event2)
+  Nhat <- NChapman(n1, n2, m2)
+  se_Nhat <- seChapman(n1, n2, m2)
+  thetab1 <- cbind(n1, n2, m2, Nhat, se_Nhat)
+  thetab2 <- rbind(thetab1, total=colSums(thetab1))
+  thetab2[nrow(thetab2), ncol(thetab2)] <- sqrt(sum(thetab1[,ncol(thetab1)]^2))
+  return(thetab2)
+}
+```
+
+### Non-corrected, lengths $\geq$ 550 mm FL
+
+```{r}
+chunk_input <- mr550_strat
+
+chunk_table <- magictable(chunk_input)
+knitr::kable(chunk_table, format.args=list(big.mark=','), digits=0)
+
+Nhat_vec <- chunk_table[1:2, 4]
+seNhat_vec <- chunk_table[1:2, 5]
+
+lengthbreaks <- c(550, 600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
+ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+                    dig.lab = 4),
+          stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
+          Nhat=as.numeric(Nhat_vec),
+          se_Nhat = as.numeric(seNhat_vec)) %>% 
+  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+
+lengthbreaks <- c(550, 600, 1200) #550 to 1146
+ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+                    dig.lab = 4),
+          stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
+          Nhat=as.numeric(Nhat_vec),
+          se_Nhat = as.numeric(seNhat_vec)) %>% 
+  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+```
+
+\pagebreak
+
+### Growth-corrected, lengths $\geq$ 550 mm FL
+
+```{r}
+chunk_input <- mr550c_strat
+
+chunk_table <- magictable_c(chunk_input)
+knitr::kable(chunk_table, format.args=list(big.mark=','), digits=0)
+
+Nhat_vec <- chunk_table[1:2, 4]
+seNhat_vec <- chunk_table[1:2, 5]
+
+lengthbreaks <- c(550, 600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
+ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+                    dig.lab = 4),
+          stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
+          Nhat=as.numeric(Nhat_vec),
+          se_Nhat = as.numeric(seNhat_vec)) %>% 
+  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+
+lengthbreaks <- c(550, 600, 1200) #550 to 1146
+ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+                    dig.lab = 4),
+          stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
+          Nhat=as.numeric(Nhat_vec),
+          se_Nhat = as.numeric(seNhat_vec)) %>% 
+  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+```
+
+\pagebreak
+
+### Non-corrected, lengths $\geq$ 600 mm FL
+
+```{r}
+chunk_input <- mr600_strat
+
+chunk_table <- magictable(chunk_input)
+knitr::kable(chunk_table, format.args=list(big.mark=','), digits=0)
+
+Nhat_vec <- chunk_table[1:2, 4]
+seNhat_vec <- chunk_table[1:2, 5]
+
+lengthbreaks <- c(600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
+ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+                    dig.lab = 4),
+          stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
+          Nhat=as.numeric(Nhat_vec),
+          se_Nhat = as.numeric(seNhat_vec)) %>% 
+  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+```
+
+### Growth-corrected, lengths $\geq$ 600 mm FL
+
+```{r}
+chunk_input <- mr600c_strat
+
+chunk_table <- magictable_c(chunk_input)
+knitr::kable(chunk_table, format.args=list(big.mark=','), digits=0)
+
+Nhat_vec <- chunk_table[1:2, 4]
+seNhat_vec <- chunk_table[1:2, 5]
+
+lengthbreaks <- c(600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
+ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+                    dig.lab = 4),
+          stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
+          Nhat=as.numeric(Nhat_vec),
+          se_Nhat = as.numeric(seNhat_vec)) %>% 
+  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+```
