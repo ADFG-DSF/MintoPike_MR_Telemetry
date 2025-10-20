@@ -1,7 +1,7 @@
 ---
 title: "Minto Pike Mark-Recapture"
 output: word_document
-date: "2025-08-08"
+date: "2025-08-19"
 ---
 
 ```{r setup, include=FALSE}
@@ -73,9 +73,13 @@ mr600c_strat <- stratify(mr600c,
                         column_names = c("FL","FLc"),
                         breaks = c(600, 650, 1200))
 
-growth_pval <- round(t.test(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1, alternative = "greater")$p.value, 2)
-growth_est <- round(mean(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1),2)
-growth_se <- round(dsftools::se(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1),2)
+# growth_pval <- round(t.test(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1, alternative = "greater")$p.value, 2)
+# growth_est <- round(mean(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1),2)
+# growth_se <- round(dsftools::se(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1),2)
+
+growth_pval <- round(t.test(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1, alternative = "greater")$p.value, 2)
+growth_est <- round(mean(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1),2)
+growth_se <- round(dsftools::se(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1),2)
 ```
 
 ## Overview
@@ -87,10 +91,15 @@ Growth between events was tested using the recorded lengths of recaptured during
 Sample sizes for uncorrected strata are presented below.
 
 ```{r}
-n1 <- table(mr550_strat$input_data$event1$FL_strat)
-n2 <- table(mr550_strat$input_data$event2$FL_strat)
-m2_1 <- table(mr550_strat$recaps$matched$FL_strat_event1)
-m2_2 <- table(mr550_strat$recaps$matched$FL_strat_event2)
+# n1 <- table(mr550_strat$input_data$event1$FL_strat)
+# n2 <- table(mr550_strat$input_data$event2$FL_strat)
+# m2_1 <- table(mr550_strat$recaps$matched$FL_strat_event1)
+# m2_2 <- table(mr550_strat$recaps$matched$FL_strat_event2)
+
+n1 <- table(mr600_strat$input_data$event1$FL_strat)
+n2 <- table(mr600_strat$input_data$event2$FL_strat)
+m2_1 <- table(mr600_strat$recaps$matched$FL_strat_event1)
+m2_2 <- table(mr600_strat$recaps$matched$FL_strat_event2)
 
 cbind(n1, n2, m2=m2_1) %>% kable
 ```
@@ -104,36 +113,76 @@ It is worth noting that an abundance estimate that is germane to the first event
 
 ```{r, fig.width=9, fig.height=4}
 par(family="serif")
+# par(mfrow=c(1,2))
+# with(mr550_strat,
+#      ksplot(input_data$event1$FL,
+#             recaps$matched$FL_event1,
+#             col=c(1,2), legend=c("Event 1", "Recaps"), main="All samples"))
+# with(mr550_strat,
+#      ksplot(input_data$event2$FL,
+#             recaps$matched$FL_event2,
+#             col=c(1,4), legend=c("Event 2", "Recaps"), main="All samples"))
+
 par(mfrow=c(1,2))
-with(mr550_strat,
+with(mr600_strat,
      ksplot(input_data$event1$FL,
             recaps$matched$FL_event1,
             col=c(1,2), legend=c("Event 1", "Recaps"), main="All samples"))
-with(mr550_strat,
+with(mr600_strat,
      ksplot(input_data$event2$FL,
             recaps$matched$FL_event2,
             col=c(1,4), legend=c("Event 2", "Recaps"), main="All samples"))
+with(mr600_strat,
+     ksplot(input_data$event1$FL,
+            input_data$event2$FL,
+            col=c(2,4), legend=c("Event 1", "Event 2"), main="All samples"))
 ```
 
 ```{r, fig.width=9, fig.height=4}
 par(family="serif")
 par(mfrow=c(1,2))
-with(mr550_strat,
+# with(mr550_strat,
+#      ksplot(input_data$event1$FL %s_l% 650,
+#             recaps$matched$FL_event1 %s_l% 650,
+#             col=c(1,2), legend=c("Event 1", "Recaps"), main="550 - 649 mm"))
+# with(mr550_strat,
+#      ksplot(input_data$event2$FL %s_l% 650,
+#             recaps$matched$FL_event2 %s_l% 650,
+#             col=c(1,4), legend=c("Event 2", "Recaps"), main="550 - 649 mm"))
+# with(mr550_strat,
+#      ksplot(input_data$event1$FL %s_geq% 650,
+#             recaps$matched$FL_event1 %s_geq% 650,
+#             col=c(1,2), legend=c("Event 1", "Recaps"), main="650 mm +"))
+# with(mr550_strat,
+#      ksplot(input_data$event2$FL %s_geq% 650,
+#             recaps$matched$FL_event2 %s_geq% 650,
+#             col=c(1,4), legend=c("Event 2", "Recaps"), main="650 mm +"))
+
+with(mr600_strat,
      ksplot(input_data$event1$FL %s_l% 650,
             recaps$matched$FL_event1 %s_l% 650,
-            col=c(1,2), legend=c("Event 1", "Recaps"), main="550 - 649 mm"))
-with(mr550_strat,
+            col=c(1,2), legend=c("Event 1", "Recaps"), main="600 - 649 mm"))
+with(mr600_strat,
      ksplot(input_data$event2$FL %s_l% 650,
             recaps$matched$FL_event2 %s_l% 650,
-            col=c(1,4), legend=c("Event 2", "Recaps"), main="550 - 649 mm"))
-with(mr550_strat,
+            col=c(1,4), legend=c("Event 2", "Recaps"), main="600 - 649 mm"))
+with(mr600_strat,
+     ksplot(input_data$event1$FL %s_l% 650,
+            input_data$event2$FL %s_l% 650,
+            col=c(2,4), legend=c("Event 1", "Event 2"), main="600 - 649 mm"))
+
+with(mr600_strat,
      ksplot(input_data$event1$FL %s_geq% 650,
             recaps$matched$FL_event1 %s_geq% 650,
             col=c(1,2), legend=c("Event 1", "Recaps"), main="650 mm +"))
-with(mr550_strat,
+with(mr600_strat,
      ksplot(input_data$event2$FL %s_geq% 650,
             recaps$matched$FL_event2 %s_geq% 650,
             col=c(1,4), legend=c("Event 2", "Recaps"), main="650 mm +"))
+with(mr600_strat,
+     ksplot(input_data$event1$FL %s_geq% 650,
+            input_data$event2$FL %s_geq% 650,
+            col=c(2,4), legend=c("Event 1", "Event 2"), main="650 mm +"))
 ```
 
 \pagebreak
@@ -154,7 +203,7 @@ Nhat_strat_f <- paste0(ff(Nhat_strat), " (", ff(seNhat_strat), ")")
 
 ### Abundance
 
-Abundance for each stratum was estimated as `r Nhat_vec_f[1]` and `r Nhat_vec_f[2]` for the 550-649 mm and 650+ mm length strata, respectively.
+Abundance for each stratum was estimated as `r Nhat_vec_f[1]` and `r Nhat_vec_f[2]` for the **600**-649 mm and 650+ mm length strata, respectively.
 
 Summing the stratum estimates and their respective variances yields an overall stratified estimate of `r Nhat_strat_f`.
 
@@ -163,51 +212,68 @@ Summing the stratum estimates and their respective variances yields an overall s
 Length composition was estimated using the samples from the second event, using stratified estimation as described below.
 
 ```{r}
-lengthbreaks <- c(550, 600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
-ASL_table(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+# lengthbreaks <- c(550, 600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
+lengthbreaks <- c(600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
+# ASL_table(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+#                     dig.lab = 4),
+#           stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
+#           Nhat=as.numeric(Nhat_vec),
+#           se_Nhat = as.numeric(seNhat_vec)) %>% 
+#   kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+ASL_table(length_cat = cut(mr600_strat$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
                     dig.lab = 4),
-          stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
-          Nhat=as.numeric(Nhat_vec),
-          se_Nhat = as.numeric(seNhat_vec)) %>% 
-  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
-```
-
-For the purpose of comparison to similar studies, abundance of pike $\geq$ 600 mm FL was estimated using the stratified estimate of the proportion of pike $\geq$ 600 mm FL, applied to the stratified abundance estimate of pike $\geq$ 550 mm FL.  Results are tabulated below.
-
-```{r}
-lengthbreaks <- c(550, 600, 1200) #550 to 1146
-ASL_table(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
-                    dig.lab = 4),
-          stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
+          stratum=as.numeric(mr600_strat$input_data$event2$FL_strat),
           Nhat=as.numeric(Nhat_vec),
           se_Nhat = as.numeric(seNhat_vec)) %>% 
   kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
 ```
 
 ```{r}
-n1_600 <- table(mr600_strat$input_data$event1$FL_strat)
-n2_600 <- table(mr600_strat$input_data$event2$FL_strat)
-m2_1_600 <- table(mr600_strat$recaps$matched$FL_strat_event1)
-m2_2_600 <- table(mr600_strat$recaps$matched$FL_strat_event2)
-
-Nhat_strat_600 <- Nstrat(n1_600, n2_600, m2_1_600)
-seNhat_strat_600 <- sestrat(n1_600, n2_600, m2_1_600)
-
-# _f for formatted
-ff <- function(x) formatC(x, digits=0, format="f", big.mark=",")
-Nhat_strat_f_600 <- paste0(ff(Nhat_strat_600), " (", ff(seNhat_strat_600), ")")
+# For the purpose of comparison to similar studies, abundance of pike $\geq$ 600 mm FL was estimated using the stratified estimate of the proportion of pike $\geq$ 600 mm FL, applied to the stratified abundance estimate of pike $\geq$ 550 mm FL.  Results are tabulated below.
 ```
 
-This may be compared to a stratified abundance estimate of pike $\geq$ 600 mm FL as calculated only from fish $\geq$ 600 mm FL, which results in an estimated abundance of `r Nhat_strat_f_600`.
+```{r}
+# lengthbreaks <- c(550, 600, 1200) #550 to 1146
+# ASL_table(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+#                     dig.lab = 4),
+#           stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
+#           Nhat=as.numeric(Nhat_vec),
+#           se_Nhat = as.numeric(seNhat_vec)) %>% 
+#   kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+```
+
+```{r}
+# n1_600 <- table(mr600_strat$input_data$event1$FL_strat)
+# n2_600 <- table(mr600_strat$input_data$event2$FL_strat)
+# m2_1_600 <- table(mr600_strat$recaps$matched$FL_strat_event1)
+# m2_2_600 <- table(mr600_strat$recaps$matched$FL_strat_event2)
+# 
+# Nhat_strat_600 <- Nstrat(n1_600, n2_600, m2_1_600)
+# seNhat_strat_600 <- sestrat(n1_600, n2_600, m2_1_600)
+# 
+# # _f for formatted
+# ff <- function(x) formatC(x, digits=0, format="f", big.mark=",")
+# Nhat_strat_f_600 <- paste0(ff(Nhat_strat_600), " (", ff(seNhat_strat_600), ")")
+```
+
+```{r}
+# This may be compared to a stratified abundance estimate of pike $\geq$ 600 mm FL as calculated only from fish $\geq$ 600 mm FL, which results in an estimated abundance of `r Nhat_strat_f_600`.
+```
 
 \pagebreak
 
 ### Length composition methodology
 
 ```{r, results='asis'}
-ASL_boilerplate(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, 
+# ASL_boilerplate(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=lengthbreaks, 
+#                           right=FALSE, dig.lab = 4),
+#           stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
+#           Nhat=as.numeric(Nhat_vec),
+#           se_Nhat = as.numeric(seNhat_vec),
+#           species="pike")
+ASL_boilerplate(length_cat = cut(mr600_strat$input_data$event2$FL, breaks=lengthbreaks, 
                           right=FALSE, dig.lab = 4),
-          stratum=as.numeric(mr550_strat$input_data$event2$FL_strat),
+          stratum=as.numeric(mr600_strat$input_data$event2$FL_strat),
           Nhat=as.numeric(Nhat_vec),
           se_Nhat = as.numeric(seNhat_vec),
           species="pike")
@@ -215,7 +281,7 @@ ASL_boilerplate(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=length
 
 \pagebreak
 
-## Capture gear
+## Capture gear - **all fish in event 2**
 
 ```{r, fig.height=5, fig.width=7}
 # event2_550 %>%
@@ -226,15 +292,35 @@ ASL_boilerplate(length_cat = cut(mr550_strat$input_data$event2$FL, breaks=length
 # par(mfrow=c(1,2))
 par(family="serif")
 
-nn <- table(event2_550$gear)
+# nn <- table(event2_550$gear)
+# labs <- paste0(names(nn), " (n=", nn, ")")
+# thecols <- adjustcolor(rainbow(4), green.f=.75, red.f=.75, blue.f=.75)
+# plot(NA, xlim=range(event1_550$FL), ylim=0:1, ylab="Cumulative Prop", xlab="FL (mm)")
+# for(thegear in sort(unique(event2_550$gear))) {
+#   plot(ecdf(event2_550$FL[event2_550$gear==thegear]), col=thecols[which(sort(unique(event2_550$gear))==thegear)], add=TRUE)
+# }
+# legend("bottomright", col=thecols, pch=16, lty=1, legend=labs, title="Capture Gear")
+# boxplot(FL~gear, data=event2_550, col=thecols, names=labs, xlab="Capture Gear", ylab="FL (mm)")
+
+# nn <- table(event2_600$gear)
+# labs <- paste0(names(nn), " (n=", nn, ")")
+# thecols <- adjustcolor(rainbow(4), green.f=.75, red.f=.75, blue.f=.75)
+# plot(NA, xlim=range(event1_600$FL), ylim=0:1, ylab="Cumulative Prop", xlab="FL (mm)")
+# for(thegear in sort(unique(event2_600$gear))) {
+#   plot(ecdf(event2_600$FL[event2_600$gear==thegear]), col=thecols[which(sort(unique(event2_600$gear))==thegear)], add=TRUE)
+# }
+# legend("bottomright", col=thecols, pch=16, lty=1, legend=labs, title="Capture Gear")
+# boxplot(FL~gear, data=event2_600, col=thecols, names=labs, xlab="Capture Gear", ylab="FL (mm)")
+
+nn <- table(event2_raw$gear)
 labs <- paste0(names(nn), " (n=", nn, ")")
 thecols <- adjustcolor(rainbow(4), green.f=.75, red.f=.75, blue.f=.75)
-plot(NA, xlim=range(event1_550$FL), ylim=0:1, ylab="Cumulative Prop", xlab="FL (mm)")
-for(thegear in sort(unique(event2_550$gear))) {
-  plot(ecdf(event2_550$FL[event2_550$gear==thegear]), col=thecols[which(sort(unique(event2_550$gear))==thegear)], add=TRUE)
+plot(NA, xlim=range(event2_raw$FL), ylim=0:1, ylab="Cumulative Prop", xlab="FL (mm)")
+for(thegear in sort(unique(event2_raw$gear))) {
+  plot(ecdf(event2_raw$FL[event2_raw$gear==thegear]), col=thecols[which(sort(unique(event2_raw$gear))==thegear)], add=TRUE)
 }
 legend("bottomright", col=thecols, pch=16, lty=1, legend=labs, title="Capture Gear")
-boxplot(FL~gear, data=event2_550, col=thecols, names=labs, xlab="Capture Gear", ylab="FL (mm)")
+boxplot(FL~gear, data=event2_raw, col=thecols, names=labs, xlab="Capture Gear", ylab="FL (mm)")
 ```
 
 All pairwise differences in the distributions of lengths associated with capture gear types in the second event were tested using Kolmogorov-Smirnov (KS) tests, with a Šidák-corrected family-wise significance level of $\alpha^*=1-(1-0.05)^{\frac{1}{6}}$ = `r round(1-((1-.05)^(1/6)), 4)` assuming six possible comparisons.  A table of p-values is reported below, with values followed by ** denoting significant pairwise differences.
@@ -243,13 +329,15 @@ Note: I'm not sure if this is meaningful.  The story is much clearer from the pl
 
 ```{r, warning=FALSE}
 pmat1 <- matrix(nrow=4, ncol=4)
-types <- sort(unique(event2_550$gear))
+types <- sort(unique(event2_raw$gear))
 rownames(pmat1) <- colnames(pmat1) <- types
 
 for(i in 1:3) {
   for(j in (i+1):4) {
-    pmat1[i,j] <- ks.test(event2_550$FL[event2_550$gear==types[i]],
-                         event2_550$FL[event2_550$gear==types[j]])$p.value
+    # pmat1[i,j] <- ks.test(event2_550$FL[event2_550$gear==types[i]],
+    #                      event2_550$FL[event2_550$gear==types[j]])$p.value
+    pmat1[i,j] <- ks.test(event2_raw$FL[event2_raw$gear==types[i]],
+                         event2_raw$FL[event2_raw$gear==types[j]])$p.value
   }
 }
 
@@ -276,10 +364,15 @@ Abundance estimation using non-corrected lengths was presented, but a case could
 ```{r, warning=FALSE, message=FALSE}
 # just realized: it makes more sense to correct the first-event samples for bias 
 # than to correct second-event samples for growth.  Argghh!  Here we go.
-yreg <- mr550$recaps$matched$FL_event2
-xreg <- mr550$recaps$matched$FL_event1
-correction_lm_550 <- lm(yreg ~ xreg)
-event1_raw$FLc <- predict(correction_lm_550, newdata = data.frame(xreg=event1_raw$FL))
+# yreg <- mr550$recaps$matched$FL_event2
+# xreg <- mr550$recaps$matched$FL_event1
+# correction_lm_550 <- lm(yreg ~ xreg)
+# event1_raw$FLc <- predict(correction_lm_550, newdata = data.frame(xreg=event1_raw$FL))
+
+yreg <- mr600$recaps$matched$FL_event2
+xreg <- mr600$recaps$matched$FL_event1
+correction_lm_600 <- lm(yreg ~ xreg)
+event1_raw$FLc <- predict(correction_lm_600, newdata = data.frame(xreg=event1_raw$FL))
 
 # c for corrected (length correction)
 event1_550c <- event1_raw %>%
@@ -340,65 +433,71 @@ magictable_c <- function(x) {  # _c for corrected
 }
 ```
 
-### Non-corrected, lengths $\geq$ 550 mm FL
-
 ```{r}
-chunk_input <- mr550_strat
-
-chunk_table <- magictable(chunk_input)
-knitr::kable(chunk_table, format.args=list(big.mark=','), digits=0)
-
-Nhat_vec <- chunk_table[1:2, 4]
-seNhat_vec <- chunk_table[1:2, 5]
-
-lengthbreaks <- c(550, 600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
-ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
-                    dig.lab = 4),
-          stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
-          Nhat=as.numeric(Nhat_vec),
-          se_Nhat = as.numeric(seNhat_vec)) %>% 
-  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
-
-lengthbreaks <- c(550, 600, 1200) #550 to 1146
-ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
-                    dig.lab = 4),
-          stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
-          Nhat=as.numeric(Nhat_vec),
-          se_Nhat = as.numeric(seNhat_vec)) %>% 
-  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+# ### Non-corrected, lengths $\geq$ 550 mm FL
 ```
 
-\pagebreak
+```{r}
+# chunk_input <- mr550_strat
+# 
+# chunk_table <- magictable(chunk_input)
+# knitr::kable(chunk_table, format.args=list(big.mark=','), digits=0)
+# 
+# Nhat_vec <- chunk_table[1:2, 4]
+# seNhat_vec <- chunk_table[1:2, 5]
+# 
+# lengthbreaks <- c(550, 600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
+# ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+#                     dig.lab = 4),
+#           stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
+#           Nhat=as.numeric(Nhat_vec),
+#           se_Nhat = as.numeric(seNhat_vec)) %>% 
+#   kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+# 
+# lengthbreaks <- c(550, 600, 1200) #550 to 1146
+# ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+#                     dig.lab = 4),
+#           stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
+#           Nhat=as.numeric(Nhat_vec),
+#           se_Nhat = as.numeric(seNhat_vec)) %>% 
+#   kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+```
+
+```{r}
+# \pagebreak
 
 ### Growth-corrected, lengths $\geq$ 550 mm FL
-
-```{r}
-chunk_input <- mr550c_strat
-
-chunk_table <- magictable_c(chunk_input)
-knitr::kable(chunk_table, format.args=list(big.mark=','), digits=0)
-
-Nhat_vec <- chunk_table[1:2, 4]
-seNhat_vec <- chunk_table[1:2, 5]
-
-lengthbreaks <- c(550, 600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
-ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
-                    dig.lab = 4),
-          stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
-          Nhat=as.numeric(Nhat_vec),
-          se_Nhat = as.numeric(seNhat_vec)) %>% 
-  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
-
-lengthbreaks <- c(550, 600, 1200) #550 to 1146
-ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
-                    dig.lab = 4),
-          stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
-          Nhat=as.numeric(Nhat_vec),
-          se_Nhat = as.numeric(seNhat_vec)) %>% 
-  kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
 ```
 
-\pagebreak
+```{r}
+# chunk_input <- mr550c_strat
+# 
+# chunk_table <- magictable_c(chunk_input)
+# knitr::kable(chunk_table, format.args=list(big.mark=','), digits=0)
+# 
+# Nhat_vec <- chunk_table[1:2, 4]
+# seNhat_vec <- chunk_table[1:2, 5]
+# 
+# lengthbreaks <- c(550, 600, 650, 700, 800, 900, 1000, 1200) #550 to 1146
+# ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+#                     dig.lab = 4),
+#           stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
+#           Nhat=as.numeric(Nhat_vec),
+#           se_Nhat = as.numeric(seNhat_vec)) %>% 
+#   kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+# 
+# lengthbreaks <- c(550, 600, 1200) #550 to 1146
+# ASL_table(length_cat = cut(chunk_input$input_data$event2$FL, breaks=lengthbreaks, right=FALSE, 
+#                     dig.lab = 4),
+#           stratum=as.numeric(chunk_input$input_data$event2$FL_strat),
+#           Nhat=as.numeric(Nhat_vec),
+#           se_Nhat = as.numeric(seNhat_vec)) %>% 
+#   kable(format.args=list(big.mark=','), digits=c(0,3,3,0,0))
+```
+
+```{r}
+# \pagebreak
+```
 
 ### Non-corrected, lengths $\geq$ 600 mm FL
 
