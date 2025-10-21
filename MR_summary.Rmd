@@ -77,7 +77,11 @@ mr600c_strat <- stratify(mr600c,
 # growth_est <- round(mean(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1),2)
 # growth_se <- round(dsftools::se(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1),2)
 
-growth_pval <- round(t.test(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1, alternative = "greater")$p.value, 2)
+growth_ttest <- t.test(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1, alternative = "greater")
+growth_pval <- round(growth_ttest$p.value, 2)
+growth_tstat <- round(growth_ttest$statistic, 2)
+growth_df <- round(growth_ttest$parameter)
+
 growth_est <- round(mean(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1),2)
 growth_se <- round(dsftools::se(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1),2)
 ```
@@ -86,7 +90,7 @@ growth_se <- round(dsftools::se(mr600_strat$recaps$matched$FL_event2 - mr600_str
 
 To facilitate possible correction for bias induced by incomplete migration from the MLSA to the CROA, abundance and length composition were estimated using length-stratified estimators, with a break point at 650 mm FL.  Since no radiotagged pike $\geq$ 650 mm FL were observed to stay in the MLSA overwinter, it was assumed that this length stratum would be free of bias due to immigration.
 
-Growth between events was tested using the recorded lengths of recaptured during both events.  A one-tailed paired t-test yielded a p-value of `r growth_pval`, indicating no evidence of positive growth.  The estimated growth was, in fact, negative, with an estimate of `r growth_est` mm FL (SE `r growth_se` mm FL).  This could be interpreted as evidence of slight measurement bias, likely during the winter.  The results presented here do not account for growth; however, the inferences of a growth-corrected estimate are compared at the end of this document.  Instead of physical growth, a "corrected" estimate could be interpreted as correcting for possible measurement bias.
+Growth between events was tested using the recorded lengths of recaptured during both events.  A one-tailed paired t-test yielded a p-value of `r growth_pval` (t = `r growth_tstat` on `r growth_df` degrees of freedom), indicating no evidence of positive growth.  The estimated growth was, in fact, negative, with an estimate of `r growth_est` mm FL (SE `r growth_se` mm FL).  This could be interpreted as evidence of slight measurement bias, likely during the winter.  The results presented here do not account for growth; however, the inferences of a growth-corrected estimate are compared at the end of this document.  Instead of physical growth, a "corrected" estimate could be interpreted as correcting for possible measurement bias.
 
 Sample sizes for uncorrected strata are presented below.
 
@@ -283,7 +287,7 @@ ASL_boilerplate(length_cat = cut(mr600_strat$input_data$event2$FL, breaks=length
 
 ## Capture gear - **all fish in event 2**
 
-```{r, fig.height=5, fig.width=7}
+```{r, fig.height=5, fig.width=7, message=FALSE, results='hide'}
 # event2_550 %>%
 #   ggplot(aes(x=gear, y=FL)) +
 #   geom_boxplot() +
@@ -312,15 +316,34 @@ par(family="serif")
 # legend("bottomright", col=thecols, pch=16, lty=1, legend=labs, title="Capture Gear")
 # boxplot(FL~gear, data=event2_600, col=thecols, names=labs, xlab="Capture Gear", ylab="FL (mm)")
 
-nn <- table(event2_raw$gear)
+
+
+# nn <- table(event2_raw$gear)
+# labs <- paste0(names(nn), " (n=", nn, ")")
+# thecols <- adjustcolor(rainbow(4), green.f=.75, red.f=.75, blue.f=.75)
+# plot(NA, xlim=range(event2_raw$FL), ylim=0:1, ylab="Cumulative Prop", xlab="FL (mm)")
+# for(thegear in sort(unique(event2_raw$gear))) {
+#   plot(ecdf(event2_raw$FL[event2_raw$gear==thegear]), col=thecols[which(sort(unique(event2_raw$gear))==thegear)], add=TRUE)
+# }
+# legend("bottomright", col=thecols, pch=16, lty=1, legend=labs, title="Capture Gear")
+# boxplot(FL~gear, data=event2_raw, col=thecols, names=labs, xlab="Capture Gear", ylab="FL (mm)")
+
+
+geartype_edit <- read_csv("FDS_2025/flat_data/geartype_edit.csv") %>%
+  mutate(Gear_edit = ifelse(Gear=="P", "J", Gear))
+table(geartype_edit$Gear_edit)
+
+
+nn <- table(geartype_edit$Gear_edit)
 labs <- paste0(names(nn), " (n=", nn, ")")
 thecols <- adjustcolor(rainbow(4), green.f=.75, red.f=.75, blue.f=.75)
-plot(NA, xlim=range(event2_raw$FL), ylim=0:1, ylab="Cumulative Prop", xlab="FL (mm)")
-for(thegear in sort(unique(event2_raw$gear))) {
-  plot(ecdf(event2_raw$FL[event2_raw$gear==thegear]), col=thecols[which(sort(unique(event2_raw$gear))==thegear)], add=TRUE)
+plot(NA, xlim=range(geartype_edit$FL), ylim=0:1, ylab="Cumulative Prop", xlab="FL (mm)")
+for(thegear in sort(unique(geartype_edit$Gear_edit))) {
+  plot(ecdf(geartype_edit$FL[geartype_edit$Gear_edit==thegear]), col=thecols[which(sort(unique(geartype_edit$Gear_edit))==thegear)], add=TRUE)
 }
 legend("bottomright", col=thecols, pch=16, lty=1, legend=labs, title="Capture Gear")
-boxplot(FL~gear, data=event2_raw, col=thecols, names=labs, xlab="Capture Gear", ylab="FL (mm)")
+boxplot(FL~Gear_edit, data=geartype_edit, col=thecols, names=labs, xlab="Capture Gear", ylab="FL (mm)")
+
 ```
 
 All pairwise differences in the distributions of lengths associated with capture gear types in the second event were tested using Kolmogorov-Smirnov (KS) tests, with a Šidák-corrected family-wise significance level of $\alpha^*=1-(1-0.05)^{\frac{1}{6}}$ = `r round(1-((1-.05)^(1/6)), 4)` assuming six possible comparisons.  A table of p-values is reported below, with values followed by ** denoting significant pairwise differences.
@@ -328,31 +351,83 @@ All pairwise differences in the distributions of lengths associated with capture
 Note: I'm not sure if this is meaningful.  The story is much clearer from the plot, and the presence or absence of family-wise significant differences mostly seems to indicate large sample sizes.
 
 ```{r, warning=FALSE}
+# pmat1 <- matrix(nrow=4, ncol=4)
+# types <- sort(unique(event2_raw$gear))
+# rownames(pmat1) <- colnames(pmat1) <- types
+# 
+# for(i in 1:3) {
+#   for(j in (i+1):4) {
+#     # pmat1[i,j] <- ks.test(event2_550$FL[event2_550$gear==types[i]],
+#     #                      event2_550$FL[event2_550$gear==types[j]])$p.value
+#     pmat1[i,j] <- ks.test(event2_raw$FL[event2_raw$gear==types[i]],
+#                          event2_raw$FL[event2_raw$gear==types[j]])$p.value
+#   }
+# }
+# 
+# pmat2 <- pmat1[1:3,2:4]
+# 
+# a <- .05
+# a_sidak <- 1-((1-a)^(1/6)) 
+# # pmat2 < a_sidak
+# 
+# pmat3 <- ifelse(is.na(pmat2), "--",
+#                 ifelse(pmat2 < 0.00001, "< 0.00001**",
+#                        ifelse(pmat2 < a_sidak, paste0(format(round(pmat2, 5), scientific=FALSE), "**"),
+#                        round(pmat2, 3))))
+# 
+# knitr::kable(pmat3, align="c")
+
+
 pmat1 <- matrix(nrow=4, ncol=4)
-types <- sort(unique(event2_raw$gear))
+types <- sort(unique(geartype_edit$Gear_edit))
 rownames(pmat1) <- colnames(pmat1) <- types
+Dmat1 <- diffmat1 <- SEmat1 <- pmat1
 
 for(i in 1:3) {
   for(j in (i+1):4) {
-    # pmat1[i,j] <- ks.test(event2_550$FL[event2_550$gear==types[i]],
-    #                      event2_550$FL[event2_550$gear==types[j]])$p.value
-    pmat1[i,j] <- ks.test(event2_raw$FL[event2_raw$gear==types[i]],
-                         event2_raw$FL[event2_raw$gear==types[j]])$p.value
+    # pmat1[i,j] <- ks.test(event2_550$FL[event2_550$Gear_edit==types[i]],
+    #                      event2_550$FL[event2_550$Gear_edit==types[j]])$p.value
+    ks <- suppressWarnings(ks.test(geartype_edit$FL[geartype_edit$Gear_edit==types[i]],
+                                   geartype_edit$FL[geartype_edit$Gear_edit==types[j]]))
+    ttest <- suppressWarnings(t.test(geartype_edit$FL[geartype_edit$Gear_edit==types[i]],
+                                   geartype_edit$FL[geartype_edit$Gear_edit==types[j]]))
+    pmat1[i,j] <- ks$p.value
+    Dmat1[i,j] <- ks$statistic
+    diffmat1[i,j] <- -diff(ttest$estimate)
+    SEmat1[i,j] <- ttest$stderr
   }
 }
 
-pmat2 <- pmat1[1:3,2:4]
+pmat2 <- pmat1[1:3,4:2]
+Dmat2 <- Dmat1[1:3,4:2]
+diffmat2 <- diffmat1[1:3,4:2]
+SEmat2 <- SEmat1[1:3,4:2]
 
 a <- .05
 a_sidak <- 1-((1-a)^(1/6)) 
 # pmat2 < a_sidak
 
-pmat3 <- ifelse(is.na(pmat2), "--",
-                ifelse(pmat2 < 0.00001, "< 0.00001**",
-                       ifelse(pmat2 < a_sidak, paste0(format(round(pmat2, 5), scientific=FALSE), "**"),
-                       round(pmat2, 3))))
+pmat3 <- ifelse(is.na(pmat2), "",  ## "--"
+                ifelse(pmat2 < 0.00001, "p < 0.00001**",
+                       paste("p =",ifelse(pmat2 < a_sidak, paste0(format(round(pmat2, 5), scientific=FALSE), "**"),
+                              round(pmat2, 3)))))
+Dmat3 <- ifelse(is.na(Dmat2), "", 
+                paste("D =",round(Dmat2, 2)))
+diffmat3 <- ifelse(is.na(diffmat2), "", 
+                paste("Est diff in means =", round(diffmat2, 2), "mm"))
+SEmat3 <- ifelse(is.na(SEmat2), "", 
+                paste("SE =",round(SEmat2, 2), "mm"))
 
-knitr::kable(pmat3, align="c")
+allmat <- matrix(nrow=4*nrow(pmat3), ncol=ncol(pmat3))
+allmat[seq(1, nrow(allmat), by=4),] <- diffmat3
+allmat[seq(2, nrow(allmat), by=4),] <- SEmat3
+allmat[seq(3, nrow(allmat), by=4),] <- Dmat3
+allmat[seq(4, nrow(allmat), by=4),] <- pmat3
+colnames(allmat) <- colnames(pmat3)
+rownames(allmat) <- rep("", nrow(allmat))
+rownames(allmat)[seq(1, nrow(allmat), by=4)] <- rownames(pmat3)
+
+knitr::kable(allmat, align="c")
 ```
 
 \pagebreak
