@@ -1,7 +1,7 @@
 ---
 title: "Minto Pike Mark-Recapture"
 output: word_document
-date: "2025-08-19"
+date: "2025-10-21"
 ---
 
 ```{r setup, include=FALSE}
@@ -55,6 +55,8 @@ mr600 <- recapr_prep(ID="Tag Number", event1=event1_600, event2=event2_600)
 mr550c <- recapr_prep(ID="Tag Number", event1=event1_550, event2=event2_550c)
 mr600c <- recapr_prep(ID="Tag Number", event1=event1_600, event2=event2_600c)
 
+mr_all <- recapr_prep(ID="Tag Number", event1=event1_raw, event2=event2_raw)
+
 # creating stratified MR objects (all possible ways)
 mr550_strat <- stratify(mr550,
                         event_names = c("event1", "event2"),
@@ -77,13 +79,24 @@ mr600c_strat <- stratify(mr600c,
 # growth_est <- round(mean(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1),2)
 # growth_se <- round(dsftools::se(mr550_strat$recaps$matched$FL_event2 - mr550_strat$recaps$matched$FL_event1),2)
 
-growth_ttest <- t.test(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1, alternative = "greater")
+# growth_ttest <- t.test(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1, alternative = "greater")
+# growth_pval <- round(growth_ttest$p.value, 2)
+# growth_tstat <- round(growth_ttest$statistic, 2)
+# growth_df <- round(growth_ttest$parameter)
+# 
+# growth_est <- round(mean(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1),2)
+# growth_se <- round(dsftools::se(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1),2)
+
+
+## It might make the most sense to estimate growth from ALL recaptured fish, not
+## just those above 550 or 600mm
+growth_ttest <- t.test(mr_all$recaps$matched$FL_event2 - mr_all$recaps$matched$FL_event1, alternative = "greater")
 growth_pval <- round(growth_ttest$p.value, 2)
 growth_tstat <- round(growth_ttest$statistic, 2)
 growth_df <- round(growth_ttest$parameter)
 
-growth_est <- round(mean(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1),2)
-growth_se <- round(dsftools::se(mr600_strat$recaps$matched$FL_event2 - mr600_strat$recaps$matched$FL_event1),2)
+growth_est <- round(mean(mr_all$recaps$matched$FL_event2 - mr_all$recaps$matched$FL_event1),2)
+growth_se <- round(dsftools::se(mr_all$recaps$matched$FL_event2 - mr_all$recaps$matched$FL_event1),2)
 ```
 
 ## Overview
@@ -408,15 +421,15 @@ a_sidak <- 1-((1-a)^(1/6))
 # pmat2 < a_sidak
 
 pmat3 <- ifelse(is.na(pmat2), "",  ## "--"
-                ifelse(pmat2 < 0.00001, "p < 0.00001**",
-                       paste("p =",ifelse(pmat2 < a_sidak, paste0(format(round(pmat2, 5), scientific=FALSE), "**"),
+                ifelse(pmat2 < 0.00001, "KS p < 0.00001**",
+                       paste("KS p =",ifelse(pmat2 < a_sidak, paste0(format(round(pmat2, 5), scientific=FALSE), "**"),
                               round(pmat2, 3)))))
 Dmat3 <- ifelse(is.na(Dmat2), "", 
-                paste("D =",round(Dmat2, 2)))
+                paste("KS D =",round(Dmat2, 2)))
 diffmat3 <- ifelse(is.na(diffmat2), "", 
                 paste("Est diff in means =", round(diffmat2, 2), "mm"))
 SEmat3 <- ifelse(is.na(SEmat2), "", 
-                paste("SE =",round(SEmat2, 2), "mm"))
+                paste("SE diff in means =",round(SEmat2, 2), "mm"))
 
 allmat <- matrix(nrow=4*nrow(pmat3), ncol=ncol(pmat3))
 allmat[seq(1, nrow(allmat), by=4),] <- diffmat3
