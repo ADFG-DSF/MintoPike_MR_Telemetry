@@ -392,8 +392,10 @@ Note: I'm not sure if this is meaningful.  The story is much clearer from the pl
 
 
 pmat1 <- matrix(nrow=4, ncol=4)
+tt <- table(geartype_edit$Gear_edit)
+types_n <- paste0(names(tt), " (n=", unname(tt), ")")
 types <- sort(unique(geartype_edit$Gear_edit))
-rownames(pmat1) <- colnames(pmat1) <- types
+rownames(pmat1) <- colnames(pmat1) <- types_n
 Dmat1 <- diffmat1 <- SEmat1 <- pmat1
 
 for(i in 1:3) {
@@ -427,9 +429,9 @@ pmat3 <- ifelse(is.na(pmat2), "",  ## "--"
 Dmat3 <- ifelse(is.na(Dmat2), "", 
                 paste("KS D =",round(Dmat2, 2)))
 diffmat3 <- ifelse(is.na(diffmat2), "", 
-                paste("Est diff in means =", round(diffmat2, 2), "mm"))
+                paste("Est =", round(diffmat2, 2), "mm")) # diff in means 
 SEmat3 <- ifelse(is.na(SEmat2), "", 
-                paste("SE diff in means =",round(SEmat2, 2), "mm"))
+                paste("SE =",round(SEmat2, 2), "mm")) # diff in means 
 
 allmat <- matrix(nrow=4*nrow(pmat3), ncol=ncol(pmat3))
 allmat[seq(1, nrow(allmat), by=4),] <- diffmat3
