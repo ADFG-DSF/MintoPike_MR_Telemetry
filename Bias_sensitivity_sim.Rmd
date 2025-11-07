@@ -96,9 +96,11 @@ legend("topleft",
        lwd=c(3, 1, 1), pch=c(16, NA, NA), col=c(1, 1, 1), lty=c(1, 3, 2))
 
 caterpillar((Nhat-N_croa)/N_croa, x=p_res, mean=TRUE,
-            xlab="MLSA inflation factor", ylab="Relative bias (prop)",
+            xlab="MLSA inflation factor", ylab="Relative bias",
+            yaxt="n",
             # ylim=c(-0.5, 4),
             col=1)
+axis(side=2, at=0:3, labels=paste(seq(0,300,by=100),"%"))
 abline(h=0, lty=3)
 abline(0, 1, lty=2)
 legend("topleft", legend=c("rel bias of sims", "(no bias)", "theoretical bias"),

@@ -16,6 +16,23 @@ https://www.adfg.alaska.gov/FedAidPDFs/ROP.SF.3F.2024.07.pdf
 
 ## Folder structure
 
+### MR_summary.Rmd 
+
+This was a summary document reporting results of the Mark-Recapture experiment.
+The embedded code chunks in this document should be considered the most recent
+version of analysis code.  **There are inconsistencies between the results of
+this analysis code and the results reported in the FDS report.** This is a result
+of differing ways to handle length censoring and stratum membership of recaptured
+fish.  However, all inferences are the same (with respect to statistical tests)
+or similar (with respect to estimates, etc.)
+
+### Bias_sensitivity_sim.Rmd
+
+This document describes the sensitivity simulation used to quantify the relative 
+magnitude of bias due to immigration, with the embedded code chunks running the
+simulation itself.  The results of this are reported in the FDS report and the
+output of this Markdown are included as an appendix in the FDS.
+
 ### /OP_2024
 
 This folder provides materials relevant to the operational plan, which was published 
@@ -42,9 +59,3 @@ to add them to the `recapr` package for R, but they are still incomplete at pres
 
 Raw sampling data are included here for both events, as .csv files.  Note: these 
 were created from the .xlsx file provided by the project biologist.
-
-### MR_summary.Rmd 
-
-This was a summary document reporting results of the Mark-Recapture experiment.
-The embedded code chunks in this document should be considered the most recent
-version of analysis code.
